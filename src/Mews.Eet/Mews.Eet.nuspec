@@ -2,7 +2,7 @@
 <package>
   <metadata>
     <id>Mews.Eet</id>
-    <version>1.1.8</version>
+    <version>1.1.9</version>
     <title>$title$</title>
     <authors>Jiří Helmich</authors>
     <owners>Mews Systems</owners>
@@ -11,7 +11,7 @@
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Client for EET - Czech fiscal machines.</description>
     <releaseNotes>
-      Enables the usage of Machine keystor on Azure.
+      Enables the usage of Machine keystore on Azure, optionally.
     </releaseNotes>
     <copyright>Copyright 2017</copyright>
     <tags>EET Fiscal</tags>

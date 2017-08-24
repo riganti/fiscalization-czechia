@@ -4,6 +4,7 @@ using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Security.Cryptography.Xml;
 using System.Xml;
+using Mews.Eet.Dto;
 
 namespace Mews.Eet.Communication
 {
@@ -15,12 +16,13 @@ namespace Mews.Eet.Communication
 
     public class SoapSigner
     {
-        public SoapSigner(X509Certificate2 certificate, SignAlgorithm signAlgorithm)
+        public SoapSigner(Certificate certificate, SignAlgorithm signAlgorithm)
         {
-            SecurityToken = Convert.ToBase64String(certificate.GetRawCertData());
+            Certificate = certificate;
+            SecurityToken = Convert.ToBase64String(certificate.X509Certificate2.GetRawCertData());
             SignatureMethod = GetSignatureMethodUri(signAlgorithm);
             DigestMethod = GetDigestMethod(signAlgorithm);
-            RsaKey = GetRsaKey(signAlgorithm, certificate);
+            RsaKey = GetRsaKey(signAlgorithm, certificate.X509Certificate2);
         }
 
         private string SecurityToken { get; }
@@ -30,6 +32,8 @@ namespace Mews.Eet.Communication
         private string DigestMethod { get; }
 
         private RSACryptoServiceProvider RsaKey { get; }
+
+        private Certificate Certificate { get; }
 
         public XmlDocument SignMessage(XmlDocument xmlDoc)
         {
@@ -95,8 +99,10 @@ namespace Mews.Eet.Communication
             {
                 var key = certificate.PrivateKey as RSACryptoServiceProvider;
                 var enhCsp = new RSACryptoServiceProvider().CspKeyContainerInfo;
-                var cspparams = new CspParameters(enhCsp.ProviderType, enhCsp.ProviderName, key.CspKeyContainerInfo.KeyContainerName);
-                cspparams.Flags = CspProviderFlags.UseMachineKeyStore;
+                var cspparams = new CspParameters(enhCsp.ProviderType, enhCsp.ProviderName, key.CspKeyContainerInfo.KeyContainerName)
+                {
+                    Flags = Certificate.UseMachineKeyStore ? CspProviderFlags.UseMachineKeyStore : CspProviderFlags.NoFlags
+                };
                 return new RSACryptoServiceProvider(cspparams);
             }
 
