@@ -19,7 +19,7 @@ namespace Mews.Eet.Communication
             Environment = environment;
             var subdomain = environment == EetEnvironment.Production ? "prod" : "pg";
             var endpointUri = new Uri($"https://{subdomain}.eet.cz:443/eet/services/EETServiceSOAP/v3");
-            SoapClient = new SoapClient(endpointUri, certificate.X509Certificate2, httpTimeout, SignAlgorithm.Sha256, logger);
+            SoapClient = new SoapClient(endpointUri, certificate, httpTimeout, SignAlgorithm.Sha256, logger);
             Logger = logger;
             SoapClient.HttpRequestFinished += (sender, args) => HttpRequestFinished?.Invoke(this, args);
             SoapClient.XmlMessageSerialized += (sender, args) => XmlMessageSerialized?.Invoke(this, args);

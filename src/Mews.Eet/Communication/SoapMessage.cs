@@ -1,6 +1,6 @@
 ﻿using System;
-using System.Security.Cryptography.X509Certificates;
 using System.Xml;
+using Mews.Eet.Dto;
 
 namespace Mews.Eet.Communication
 {
@@ -13,13 +13,8 @@ namespace Mews.Eet.Communication
 
         public SoapMessage(SoapMessagePart header, SoapMessagePart body)
         {
-            if (body == null)
-            {
-                throw new ArgumentException("No body found.");
-            }
-
             Header = header;
-            Body = body;
+            Body = body ?? throw new ArgumentException("No body found.");
         }
 
         public SoapMessagePart Body { get; }
@@ -65,7 +60,7 @@ namespace Mews.Eet.Communication
             return xmlDocument;
         }
 
-        public XmlDocument GetSignedXmlDocument(X509Certificate2 certificate, SignAlgorithm signAlgorithm)
+        public XmlDocument GetSignedXmlDocument(Certificate certificate, SignAlgorithm signAlgorithm)
         {
             var temporaryXmlDocument = new XmlDocument();
             temporaryXmlDocument.PreserveWhitespace = true;

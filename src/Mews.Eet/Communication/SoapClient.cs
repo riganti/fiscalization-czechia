@@ -3,6 +3,7 @@ using System.Security;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using System.Xml;
+using Mews.Eet.Dto;
 using Mews.Eet.Dto.Wsdl;
 using Mews.Eet.Events;
 
@@ -10,7 +11,7 @@ namespace Mews.Eet.Communication
 {
     public class SoapClient
     {
-        public SoapClient(Uri endpointUri, X509Certificate2 certificate, TimeSpan httpTimeout, SignAlgorithm signAlgorithm = SignAlgorithm.Sha256, EetLogger logger = null)
+        public SoapClient(Uri endpointUri, Certificate certificate, TimeSpan httpTimeout, SignAlgorithm signAlgorithm = SignAlgorithm.Sha256, EetLogger logger = null)
         {
             HttpClient = new SoapHttpClient(endpointUri, httpTimeout, logger);
             Certificate = certificate;
@@ -26,7 +27,7 @@ namespace Mews.Eet.Communication
 
         private SoapHttpClient HttpClient { get; }
 
-        private X509Certificate2 Certificate { get; }
+        private Certificate Certificate { get; }
 
         private SignAlgorithm SignAlgorithm { get; }
 
