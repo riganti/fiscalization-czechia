@@ -9,9 +9,9 @@ namespace Mews.Eet.Dto
         public Certificate(string password, byte[] data, bool useMachineKeyStore = false)
         {
             Password = password;
+            KeyStorageFlags = GetKeyStorageFlags(useMachineKeyStore);
             Data = data;
             Key = ComputeKey();
-            KeyStorageFlags = GetKeyStorageFlags(useMachineKeyStore);
             X509Certificate2 = new X509Certificate2(Data, Password, KeyStorageFlags);
             UseMachineKeyStore = useMachineKeyStore;
         }

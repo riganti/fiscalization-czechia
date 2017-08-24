@@ -198,8 +198,6 @@ namespace Mews.Eet.Tests.IntegrationTests
             Assert.Equal("432.00", attributes["urceno_cerp_zuct"].Value);
         }
 
-
-
         private Certificate CreateCertificate(TaxPayerFixture fixture)
         {
             return new Certificate(
