@@ -7,8 +7,9 @@ namespace Mews.Eet.Dto
 {
     public class SendRevenueResult
     {
-        internal SendRevenueResult(SendRevenueXmlResponse response)
+        internal SendRevenueResult(SoapResult<SendRevenueXmlMessage, SendRevenueXmlResponse> soapResult)
         {
+            var response = soapResult.ResponseData;
             var confirmation = response.Item as ResponseSuccess;
             var rejection = response.Item as ResponseError;
 
@@ -24,6 +25,7 @@ namespace Mews.Eet.Dto
             )) : null;
             IsPlayground = confirmation != null ? confirmation.IsPlaygroundSpecified && confirmation.IsPlayground : rejection.IsPlaygroundSpecified && rejection.IsPlayground;
             Warnings = GetWarnings(response.Warning);
+            SoapResult = soapResult;
         }
 
         public Guid? Id { get; }
@@ -49,6 +51,8 @@ namespace Mews.Eet.Dto
         public SendRevenueError Error { get; }
 
         public IEnumerable<Fault> Warnings { get; }
+
+        public SoapResult<SendRevenueXmlMessage, SendRevenueXmlResponse> SoapResult { get; }
 
         private static IEnumerable<Fault> GetWarnings(ResponseWarning[] warnings)
         {

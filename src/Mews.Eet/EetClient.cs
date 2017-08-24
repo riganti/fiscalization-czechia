@@ -2,7 +2,6 @@
 using System.Threading.Tasks;
 using Mews.Eet.Communication;
 using Mews.Eet.Dto;
-using Mews.Eet.Events;
 
 namespace Mews.Eet
 {
@@ -13,13 +12,7 @@ namespace Mews.Eet
             var effectiveTimeout = httpTimeout ?? TimeSpan.FromSeconds(2);
             EetSoapClient = new EetSoapClient(certificate, environment, effectiveTimeout, logger);
             Logger = logger;
-            EetSoapClient.HttpRequestFinished += (sender, args) => HttpRequestFinished?.Invoke(this, args);
-            EetSoapClient.XmlMessageSerialized += (sender, args) => XmlMessageSerialized?.Invoke(this, args);
         }
-
-        public event EventHandler<HttpRequestFinishedEventArgs> HttpRequestFinished;
-
-        public event EventHandler<XmlMessageSerializedEventArgs> XmlMessageSerialized;
 
         private EetSoapClient EetSoapClient { get; }
 

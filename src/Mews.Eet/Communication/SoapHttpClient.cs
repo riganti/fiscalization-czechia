@@ -4,7 +4,7 @@ using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
-using Mews.Eet.Events;
+using Mews.Eet.Dto;
 
 namespace Mews.Eet.Communication
 {
@@ -13,12 +13,10 @@ namespace Mews.Eet.Communication
         public SoapHttpClient(Uri endpointUri, TimeSpan timeout, EetLogger logger)
         {
             EndpointUri = endpointUri;
-            HttpClient = new HttpClient() { Timeout = timeout };
+            HttpClient = new HttpClient { Timeout = timeout };
             Logger = logger;
             EnableTls12();
         }
-
-        public event EventHandler<HttpRequestFinishedEventArgs> HttpRequestFinished;
 
         private Uri EndpointUri { get; }
 
@@ -26,26 +24,25 @@ namespace Mews.Eet.Communication
 
         private EetLogger Logger { get; }
 
-        public async Task<string> SendAsync(string body, string operation)
+        public async Task<PostResponse> SendAsync(PostRequest request)
         {
-            HttpClient.DefaultRequestHeaders.Add("SOAPAction", operation);
+            HttpClient.DefaultRequestHeaders.Add("SOAPAction", request.Operation);
 
-            var requestContent = new StringContent(body, Encoding.UTF8, "application/x-www-form-urlencoded");
-            Logger?.Debug("Starting HTTP request.", new { HttpRequestBody = body });
+            var requestContent = new StringContent(request.Body, Encoding.UTF8, "application/x-www-form-urlencoded");
+            Logger?.Debug("Starting HTTP request.", new { HttpRequestBody = request.Body });
 
             var stopwatch = new Stopwatch();
             stopwatch.Start();
 
             using (var response = await HttpClient.PostAsync(EndpointUri, requestContent).ConfigureAwait(continueOnCapturedContext: false))
             {
-                var result = await response.Content.ReadAsStringAsync().ConfigureAwait(continueOnCapturedContext: false);
+                var responseBody = await response.Content.ReadAsStringAsync().ConfigureAwait(continueOnCapturedContext: false);
 
                 stopwatch.Stop();
-                var duration = stopwatch.ElapsedMilliseconds;
-                Logger?.Info($"HTTP request finished in {stopwatch.ElapsedMilliseconds}ms.", new { HttpRequestDuration = duration });
-                HttpRequestFinished?.Invoke(this, new HttpRequestFinishedEventArgs(duration));
+                var requestDuration = stopwatch.ElapsedMilliseconds;
+                Logger?.Info($"HTTP request finished in {stopwatch.ElapsedMilliseconds}ms.", new { HttpRequestDuration = requestDuration });
 
-                return result;
+                return new PostResponse(responseBody, request, requestDuration);
             }
         }
 

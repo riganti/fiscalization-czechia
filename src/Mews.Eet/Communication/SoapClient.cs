@@ -1,11 +1,6 @@
 ﻿using System;
-using System.Security;
-using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
-using System.Xml;
 using Mews.Eet.Dto;
-using Mews.Eet.Dto.Wsdl;
-using Mews.Eet.Events;
 
 namespace Mews.Eet.Communication
 {
@@ -18,12 +13,7 @@ namespace Mews.Eet.Communication
             SignAlgorithm = signAlgorithm;
             XmlManipulator = new XmlManipulator();
             Logger = logger;
-            HttpClient.HttpRequestFinished += (sender, args) => HttpRequestFinished?.Invoke(this, args);
         }
-
-        public event EventHandler<HttpRequestFinishedEventArgs> HttpRequestFinished;
-
-        public event EventHandler<XmlMessageSerializedEventArgs> XmlMessageSerialized;
 
         private SoapHttpClient HttpClient { get; }
 
@@ -35,40 +25,25 @@ namespace Mews.Eet.Communication
 
         private EetLogger Logger { get; }
 
-        public async Task<TOut> SendAsync<TIn, TOut>(TIn messageBodyObject, string operation)
+        public async Task<SoapResult<TIn, TBody>> SendAsync<TIn, TBody>(SoapInput<TIn> input)
             where TIn : class, new()
-            where TOut : class, new()
+            where TBody : class, new()
         {
-            var messageBodyXmlElement = XmlManipulator.Serialize(messageBodyObject);
-            var mesasgeBodyXmlString = messageBodyXmlElement.OuterXml;
-            Logger?.Debug("Created XML document from DTOs.", new { XmlString = mesasgeBodyXmlString });
-            XmlMessageSerialized?.Invoke(this, new XmlMessageSerializedEventArgs(messageBodyXmlElement, (messageBodyObject as SendRevenueXmlMessage)?.Data.BillNumber));
+            var messageInputXmlElement = XmlManipulator.Serialize(input.Message);
+            var mesasgeInputXmlString = messageInputXmlElement.OuterXml;
+            Logger?.Debug("Created XML document from DTOs.", new { XmlString = mesasgeInputXmlString });
 
-            var soapMessage = new SoapMessage(new SoapMessagePart(messageBodyXmlElement));
-            var xmlDocument = Certificate == null ? soapMessage.GetXmlDocument() : soapMessage.GetSignedXmlDocument(Certificate, SignAlgorithm);
+            var soapMessage = new SoapMessage(new SoapMessagePart(messageInputXmlElement));
+            var soapXmlDocument = Certificate == null ? soapMessage.GetXmlDocument() : soapMessage.GetSignedXmlDocument(Certificate, SignAlgorithm);
 
-            var xml = xmlDocument.OuterXml;
+            var xml = soapXmlDocument.OuterXml;
             Logger?.Debug("Created signed XML.", new { SoapString = xml });
 
-            var response = await HttpClient.SendAsync(xml, operation).ConfigureAwait(continueOnCapturedContext: false);
+            var response = await HttpClient.SendAsync(new PostRequest(xml, input.Operation)).ConfigureAwait(continueOnCapturedContext: false);
 
-            Logger?.Debug("Received RAW response from EET servers.", new { HttpResponseBody = response });
+            Logger?.Debug("Received RAW response from EET servers.", response);
 
-            var soapBody = GetSoapBody(response);
-            return XmlManipulator.Deserialize<TOut>(soapBody);
-        }
-
-        private XmlElement GetSoapBody(string soapXmlString)
-        {
-            var xmlDocument = new XmlDocument();
-            xmlDocument.LoadXml(soapXmlString);
-
-            var soapMessage = SoapMessage.FromSoapXml(xmlDocument);
-            if (!soapMessage.VerifySignature())
-            {
-                throw new SecurityException("The SOAP message signature is not valid.");
-            }
-            return soapMessage.Body.XmlElement.FirstChild as XmlElement;
+            return new SoapResult<TIn, TBody>(response, input, messageInputXmlElement, soapXmlDocument);
         }
     }
 }

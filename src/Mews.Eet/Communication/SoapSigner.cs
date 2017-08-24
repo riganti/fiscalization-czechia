@@ -98,12 +98,12 @@ namespace Mews.Eet.Communication
             if (signAlgorithm == SignAlgorithm.Sha256)
             {
                 var key = certificate.PrivateKey as RSACryptoServiceProvider;
-                var enhCsp = new RSACryptoServiceProvider().CspKeyContainerInfo;
-                var cspparams = new CspParameters(enhCsp.ProviderType, enhCsp.ProviderName, key.CspKeyContainerInfo.KeyContainerName)
+                var cspKeyContainerInfo = new RSACryptoServiceProvider().CspKeyContainerInfo;
+                var cspParameters = new CspParameters(cspKeyContainerInfo.ProviderType, cspKeyContainerInfo.ProviderName, key.CspKeyContainerInfo.KeyContainerName)
                 {
                     Flags = Certificate.UseMachineKeyStore ? CspProviderFlags.UseMachineKeyStore : CspProviderFlags.NoFlags
                 };
-                return new RSACryptoServiceProvider(cspparams);
+                return new RSACryptoServiceProvider(cspParameters);
             }
 
             throw new InvalidEnumArgumentException($"Unsupported signing algorithm {signAlgorithm}.");

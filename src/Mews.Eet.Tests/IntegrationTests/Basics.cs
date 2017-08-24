@@ -128,12 +128,8 @@ namespace Mews.Eet.Tests.IntegrationTests
             var certificate = CreateCertificate(Fixtures.First);
             var record = CreateSimpleRecord(certificate, Fixtures.First);
             var client = new EetClient(certificate, EetEnvironment.Playground);
-            client.HttpRequestFinished += (sender, args) =>
-            {
-                var duration = args.Duration;
-                Assert.InRange(duration, 0, 10000);
-            };
-            await client.SendRevenueAsync(record);
+            var response = await client.SendRevenueAsync(record);
+            Assert.InRange(response.SoapResult.PostResponse.Duration, 0, 10000);
         }
 
         [Fact]
@@ -142,11 +138,8 @@ namespace Mews.Eet.Tests.IntegrationTests
             var certificate = CreateCertificate(Fixtures.First);
             var record = CreateSimpleRecord(certificate, Fixtures.First);
             var client = new EetClient(certificate, EetEnvironment.Playground);
-            client.XmlMessageSerialized += (sender, args) =>
-            {
-                Assert.NotNull(args.XmlElement);
-            };
-            await client.SendRevenueAsync(record);
+            var response = await client.SendRevenueAsync(record);
+            Assert.NotNull(response.SoapResult.MessageBodyXml);
         }
 
         [Fact]
@@ -184,28 +177,25 @@ namespace Mews.Eet.Tests.IntegrationTests
                 billNumber: new BillNumber("2016-123")
             );
             var client = new EetClient(certificate, EetEnvironment.Playground);
-            client.XmlMessageSerialized += (sender, args) =>
-            {
-                var xmlElement = args.XmlElement;
-                Assert.NotNull(xmlElement);
+            var response = await client.SendRevenueAsync(record);
+            var xmlElement = response.SoapResult.MessageBodyXml;
+            Assert.NotNull(xmlElement);
 
-                var namespaceManager = new XmlNamespaceManager(xmlElement.OwnerDocument.NameTable);
-                namespaceManager.AddNamespace("eet", "http://fs.mfcr.cz/eet/schema/v3");
-                var dataNode = xmlElement.SelectSingleNode("//eet:Data", namespaceManager);
-                var attributes = dataNode.Attributes;
-                Assert.Equal("300.00", attributes["zakl_dan1"].Value);
-                Assert.Equal("200.00", attributes["zakl_dan2"].Value);
-                Assert.Equal("100.00", attributes["zakl_dan3"].Value);
-                Assert.Equal("63.00", attributes["dan1"].Value);
-                Assert.Equal("30.00", attributes["dan2"].Value);
-                Assert.Equal("10.00", attributes["dan3"].Value);
-                Assert.Equal("11.00", attributes["pouzit_zboz3"].Value);
-                Assert.Equal("12.00", attributes["pouzit_zboz2"].Value);
-                Assert.Equal("13.00", attributes["pouzit_zboz1"].Value);
-                Assert.Equal("543.00", attributes["cerp_zuct"].Value);
-                Assert.Equal("432.00", attributes["urceno_cerp_zuct"].Value);
-            };
-            await client.SendRevenueAsync(record);
+            var namespaceManager = new XmlNamespaceManager(xmlElement.OwnerDocument.NameTable);
+            namespaceManager.AddNamespace("eet", "http://fs.mfcr.cz/eet/schema/v3");
+            var dataNode = xmlElement.SelectSingleNode("//eet:Data", namespaceManager);
+            var attributes = dataNode.Attributes;
+            Assert.Equal("300.00", attributes["zakl_dan1"].Value);
+            Assert.Equal("200.00", attributes["zakl_dan2"].Value);
+            Assert.Equal("100.00", attributes["zakl_dan3"].Value);
+            Assert.Equal("63.00", attributes["dan1"].Value);
+            Assert.Equal("30.00", attributes["dan2"].Value);
+            Assert.Equal("10.00", attributes["dan3"].Value);
+            Assert.Equal("11.00", attributes["pouzit_zboz3"].Value);
+            Assert.Equal("12.00", attributes["pouzit_zboz2"].Value);
+            Assert.Equal("13.00", attributes["pouzit_zboz1"].Value);
+            Assert.Equal("543.00", attributes["cerp_zuct"].Value);
+            Assert.Equal("432.00", attributes["urceno_cerp_zuct"].Value);
         }
 
 
