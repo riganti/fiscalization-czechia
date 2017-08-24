@@ -13,8 +13,13 @@ namespace Mews.Eet.Communication
 
         public SoapMessage(SoapMessagePart header, SoapMessagePart body)
         {
+            if (body == null)
+            {
+                throw new ArgumentException("No body found.");
+            }
+
             Header = header;
-            Body = body ?? throw new ArgumentException("No body found.");
+            Body = body;
         }
 
         public SoapMessagePart Body { get; }
