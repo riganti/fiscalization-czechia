@@ -1,7 +1,5 @@
 [![Build Status](https://mews.visualstudio.com/Mews/_apis/build/status/MewsSystems.fiscalization-spain?branchName=master)](https://mews.visualstudio.com/Mews/_build/latest?definitionId=4&branchName=master)
 
-[![Build Status](https://travis-ci.org/MewsSystems/eet.svg?branch=master)](https://travis-ci.org/MewsSystems/eet)
-
 # EET
 EET stands for Elektronická Evidence Tržeb, which is Czech version of Fiscal Printers.
 It's an online API provided by the Ministry of Finance in a form of a SOAP Web Service.
