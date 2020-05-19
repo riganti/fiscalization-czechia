@@ -5,7 +5,6 @@ using System.Security.Cryptography.X509Certificates;
 using System.Security.Cryptography.Xml;
 using System.Xml;
 using Mews.Eet.Dto;
-using Mews.Eet.Extensions;
 
 namespace Mews.Eet.Communication
 {
@@ -98,7 +97,13 @@ namespace Mews.Eet.Communication
 
             if (signAlgorithm == SignAlgorithm.Sha256)
             {
-                return certificate.GetPrivateKeyRsaCryptoServiceProvider(Certificate.UseMachineKeyStore);
+                var key = certificate.PrivateKey as RSACryptoServiceProvider;
+                var cspKeyContainerInfo = new RSACryptoServiceProvider().CspKeyContainerInfo;
+                var cspParameters = new CspParameters(cspKeyContainerInfo.ProviderType, cspKeyContainerInfo.ProviderName, key.CspKeyContainerInfo.KeyContainerName)
+                {
+                    Flags = Certificate.UseMachineKeyStore ? CspProviderFlags.UseMachineKeyStore : CspProviderFlags.NoFlags
+                };
+                return new RSACryptoServiceProvider(cspParameters);
             }
 
             throw new InvalidEnumArgumentException($"Unsupported signing algorithm {signAlgorithm}.");
