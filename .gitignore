@@ -5,4 +5,5 @@
 *.[Cc]ache
 *.bak
 *.ncb
+*.dtbcache.v2
 src/packages

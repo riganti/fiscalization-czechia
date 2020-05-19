@@ -88,7 +88,7 @@ namespace Mews.Eet.Tests.IntegrationTests
             var client = new EetClient(certificate, EetEnvironment.Playground);
             var response = await client.SendRevenueAsync(record);
             Assert.NotNull(response.Error);
-            Assert.Equal(response.Error.Reason.Code, 6);
+            Assert.Equal(4, response.Error.Reason.Code);
         }
 
         [Fact]
@@ -103,7 +103,7 @@ namespace Mews.Eet.Tests.IntegrationTests
                 logger: new EetLogger((m, d) =>
                 {
                     var jsonString = JsonConvert.SerializeObject(d);
-                    Assert.True(jsonString.StartsWith("{"));
+                    Assert.StartsWith("{", jsonString);
                 })
             );
             var ex = await Record.ExceptionAsync(async () => await client.SendRevenueAsync(record));
