@@ -214,8 +214,7 @@ namespace Mews.Eet.Tests.IntegrationTests
         {
             return new Certificate(
                 password: fixture.CertificatePassword,
-                data: fixture.CertificateData,
-                true
+                data: fixture.CertificateData
             );
         }
 
