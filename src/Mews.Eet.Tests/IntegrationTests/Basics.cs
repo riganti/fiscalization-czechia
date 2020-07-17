@@ -88,7 +88,7 @@ namespace Mews.Eet.Tests.IntegrationTests
             var client = new EetClient(certificate, EetEnvironment.Playground);
             var response = await client.SendRevenueAsync(record);
             Assert.NotNull(response.Error);
-            Assert.Equal(4, response.Error.Reason.Code);
+            Assert.Equal(6, response.Error.Reason.Code);
         }
 
         [Fact]
@@ -214,7 +214,8 @@ namespace Mews.Eet.Tests.IntegrationTests
         {
             return new Certificate(
                 password: fixture.CertificatePassword,
-                data: fixture.CertificateData
+                data: fixture.CertificateData,
+                true
             );
         }
 
