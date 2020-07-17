@@ -22,7 +22,7 @@ namespace Mews.Eet.Communication
             SecurityToken = Convert.ToBase64String(certificate.X509Certificate2.GetRawCertData());
             SignatureMethod = GetSignatureMethodUri(signAlgorithm);
             DigestMethod = GetDigestMethod(signAlgorithm);
-            RsaKey = GetRsaKey(signAlgorithm, certificate.X509Certificate2);
+            RsaKey = GetRsaKey(signAlgorithm);
         }
 
         private string SecurityToken { get; }
