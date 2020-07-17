@@ -31,7 +31,7 @@ namespace Mews.Eet.Communication
 
         private string DigestMethod { get; }
 
-        private RSACryptoServiceProvider RsaKey { get; }
+        private RSA RsaKey { get; }
 
         private Certificate Certificate { get; }
 
@@ -74,9 +74,7 @@ namespace Mews.Eet.Communication
 
             signedXml.SignedInfo.CanonicalizationMethod = SignedXml.XmlDsigExcC14NTransformUrl;
 
-            var reference = new Reference();
-            reference.Uri = "#_1";
-            reference.DigestMethod = DigestMethod;
+            var reference = new Reference { Uri = "#_1", DigestMethod = DigestMethod };
 
             reference.AddTransform(new XmlDsigExcC14NTransform());
             signedXml.AddReference(reference);
@@ -88,53 +86,42 @@ namespace Mews.Eet.Communication
             return xmlDoc;
         }
 
-        private RSACryptoServiceProvider GetRsaKey(SignAlgorithm signAlgorithm, X509Certificate2 certificate)
+        private RSA GetRsaKey(SignAlgorithm signAlgorithm, X509Certificate2 certificate)
         {
-            if (signAlgorithm == SignAlgorithm.Sha1)
+            switch (signAlgorithm)
             {
-                return certificate.PrivateKey as RSACryptoServiceProvider;
+                case SignAlgorithm.Sha1:
+                case SignAlgorithm.Sha256:
+                    return certificate.GetRSAPrivateKey();
+                default:
+                    throw new InvalidEnumArgumentException($"Unsupported signing algorithm {signAlgorithm}.");
             }
-
-            if (signAlgorithm == SignAlgorithm.Sha256)
-            {
-                var key = certificate.PrivateKey as RSACryptoServiceProvider;
-                var cspKeyContainerInfo = new RSACryptoServiceProvider().CspKeyContainerInfo;
-                var cspParameters = new CspParameters(cspKeyContainerInfo.ProviderType, cspKeyContainerInfo.ProviderName, key.CspKeyContainerInfo.KeyContainerName)
-                {
-                    Flags = Certificate.UseMachineKeyStore ? CspProviderFlags.UseMachineKeyStore : CspProviderFlags.NoFlags
-                };
-                return new RSACryptoServiceProvider(cspParameters);
-            }
-
-            throw new InvalidEnumArgumentException($"Unsupported signing algorithm {signAlgorithm}.");
         }
 
         private string GetSignatureMethodUri(SignAlgorithm signAlgorithm)
         {
-            if (signAlgorithm == SignAlgorithm.Sha1)
+            switch (signAlgorithm)
             {
-                return "http://www.w3.org/2000/09/xmldsig#rsa-sha1";
+                case SignAlgorithm.Sha1:
+                    return "http://www.w3.org/2000/09/xmldsig#rsa-sha1";
+                case SignAlgorithm.Sha256:
+                    return "http://www.w3.org/2001/04/xmldsig-more#rsa-sha256";
+                default:
+                    throw new InvalidEnumArgumentException($"Unsupported signing algorithm {signAlgorithm}.");
             }
-            if (signAlgorithm == SignAlgorithm.Sha256)
-            {
-                return "http://www.w3.org/2001/04/xmldsig-more#rsa-sha256";
-            }
-
-            throw new InvalidEnumArgumentException($"Unsupported signing algorithm {signAlgorithm}.");
         }
 
         private string GetDigestMethod(SignAlgorithm signAlgorithm)
         {
-            if (signAlgorithm == SignAlgorithm.Sha1)
+            switch (signAlgorithm)
             {
-                return "http://www.w3.org/2000/09/xmldsig#sha1";
+                case SignAlgorithm.Sha1:
+                    return "http://www.w3.org/2000/09/xmldsig#sha1";
+                case SignAlgorithm.Sha256:
+                    return "http://www.w3.org/2001/04/xmlenc#sha256";
+                default:
+                    throw new InvalidEnumArgumentException($"Unsupported signing algorithm {signAlgorithm}.");
             }
-            if (signAlgorithm == SignAlgorithm.Sha256)
-            {
-                return "http://www.w3.org/2001/04/xmlenc#sha256";
-            }
-
-            throw new InvalidEnumArgumentException($"Unsupported signing algorithm {signAlgorithm}.");
         }
     }
 }
