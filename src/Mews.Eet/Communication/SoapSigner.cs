@@ -86,13 +86,13 @@ namespace Mews.Eet.Communication
             return xmlDoc;
         }
 
-        private RSA GetRsaKey(SignAlgorithm signAlgorithm, X509Certificate2 certificate)
+        private RSA GetRsaKey(SignAlgorithm signAlgorithm)
         {
             switch (signAlgorithm)
             {
                 case SignAlgorithm.Sha1:
                 case SignAlgorithm.Sha256:
-                    return certificate.GetRSAPrivateKey();
+                    return Certificate.Key;
                 default:
                     throw new InvalidEnumArgumentException($"Unsupported signing algorithm {signAlgorithm}.");
             }
